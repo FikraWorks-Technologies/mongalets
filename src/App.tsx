@@ -1,0 +1,36 @@
+import { HomePage } from './pages/HomePage'
+import { LoginPage } from './pages/LoginPage'
+import { PortalPage } from './pages/PortalPage'
+import { Toast } from './components/Toast'
+import { useRoute, navigate } from './lib/router'
+import { useSession } from './lib/session'
+
+export default function App() {
+  const route = useRoute()
+  const { session, syncedFromAnotherTab } = useSession()
+
+  if (route.page === 'home') return <><HomePage session={session} /><Toast visible={syncedFromAnotherTab} message="Your session was updated from another tab." /></>
+  if (route.page === 'login') return <><LoginPage initialRole={route.role} session={session} /><Toast visible={syncedFromAnotherTab} message="Your session was updated from another tab." /></>
+
+  if (route.page === 'portal') {
+    if (!session || session.role !== route.role) {
+      return (
+        <div className="route-guard">
+          <div className="route-guard__card">
+            <span>ML</span>
+            <h1>Secure workspace</h1>
+            <p>Sign in with the correct role to access this MongaLets portal.</p>
+            <button className="button button--primary" onClick={() => navigate(`/login/${route.role}`)}>Continue to login</button>
+          </div>
+        </div>
+      )
+    }
+    return <><PortalPage role={route.role} section={route.section} session={session} /><Toast visible={syncedFromAnotherTab} message="Your session was updated from another tab." /></>
+  }
+
+  return (
+    <div className="not-found">
+      <div><span>404</span><h1>This page is not part of the property.</h1><p>The link may have moved or the workspace is not available.</p><button className="button button--primary" onClick={() => navigate('/')}>Return home</button></div>
+    </div>
+  )
+}
