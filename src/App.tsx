@@ -1,6 +1,7 @@
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { SecurityPortalPage } from './pages/SecurityPortalPage'
+import { RoleWorkspacePage } from './pages/RoleWorkspacePage'
 import { Toast } from './components/Toast'
 import { useRoute, navigate } from './lib/router'
 import { useSession } from './lib/session'
@@ -25,7 +26,8 @@ export default function App() {
         </div>
       )
     }
-    return <><SecurityPortalPage role={route.role} section={route.section} session={session} /><Toast visible={syncedFromAnotherTab} message="Your session was updated from another tab." /></>
+    if (route.section) return <><RoleWorkspacePage role={route.role} section={route.section} session={session} /><Toast visible={syncedFromAnotherTab} message="Your session was updated from another tab." /></>
+    return <><SecurityPortalPage role={route.role} session={session} /><Toast visible={syncedFromAnotherTab} message="Your session was updated from another tab." /></>
   }
 
   return (
