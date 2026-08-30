@@ -4,6 +4,7 @@ import App from './App'
 import './styles.css'
 import './security-home.css'
 import './security-portal.css'
+import './role-dashboards.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
