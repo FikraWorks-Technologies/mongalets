@@ -8,12 +8,13 @@ import { RoleSection } from './RoleSections'
 
 const roleNames: Record<Role, string> = { owner: 'Management', admin: 'Security admin', tenant: 'Resident', provider: 'Service provider', guest: 'Guest' }
 const nav: Record<Role, [string, string][]> = {
-  owner: [['grid','Overview'],['shield','Security'],['users','People & presence'],['key','Visitor access'],['tool','Requests'],['briefcase','Service providers'],['calendar','Calendar']],
-  admin: [['grid','Overview'],['shield','Security'],['key','Verify access'],['users','People & presence'],['tool','Requests'],['briefcase','Service visits'],['calendar','Calendar']],
+  owner: [['grid','Overview'],['key','Verify access'],['shield','Security'],['users','People & presence'],['key','Visitor access'],['tool','Requests'],['briefcase','Service providers'],['calendar','Calendar']],
+  admin: [['grid','Overview'],['key','Verify access'],['shield','Security'],['users','People & presence'],['tool','Requests'],['briefcase','Service visits'],['calendar','Calendar']],
   tenant: [['grid','Home'],['key','My access'],['users','Visitors'],['tool','My reports'],['briefcase','Services'],['calendar','Calendar']],
-  provider: [['grid','Overview'],['tool','My jobs'],['calendar','Schedule'],['key','Access pass'],['briefcase','My services']],
+  provider: [['grid','Overview'],['key','Access pass'],['tool','My jobs'],['calendar','Schedule'],['briefcase','My services']],
   guest: [['grid','Home'],['key','Access pass'],['calendar','Visit details'],['shield','Access guide'],['briefcase','Services']],
 }
+const accessLabels = new Set(['Verify access','My access','Access pass','Visitor access'])
 
 export function RoleWorkspacePage({ role, section, session }: { role: Role; section: string; session: Session }) {
   const [open, setOpen] = useState(false)
@@ -25,7 +26,7 @@ export function RoleWorkspacePage({ role, section, session }: { role: Role; sect
     <aside className={open ? 'is-open' : ''}>
       <div className="role-workspace-brand"><button onClick={() => navigate('/')}><Logo inverse /></button><button className="icon-button role-mobile-close" onClick={() => setOpen(false)}><Icon name="close" /></button></div>
       <div className="role-workspace-badge"><span><Icon name={role === 'provider' ? 'tool' : role === 'guest' ? 'key' : role === 'tenant' ? 'home' : 'shield'} size={17} /></span><div><small>Workspace</small><strong>{roleNames[role]}</strong></div></div>
-      <nav><small>Workspace</small>{items.map(([icon,label]) => <button key={label} className={label === active ? 'active' : ''} onClick={() => go(label)}><Icon name={icon as any} size={17}/><span>{label}</span>{(['My reports','Requests','Verify access','Visitor access'].includes(label)) && <b>2</b>}</button>)}</nav>
+      <nav><small>Workspace</small>{items.map(([icon,label]) => <button key={label} className={`${label === active ? 'active ' : ''}${accessLabels.has(label) ? 'access-nav-item' : ''}`} onClick={() => go(label)} aria-current={label === active ? 'page' : undefined}><Icon name={icon as any} size={17}/><span>{label}</span>{accessLabels.has(label) ? <b className="access-nav-badge">ACCESS</b> : (['My reports','Requests','People & presence'].includes(label) && <b>2</b>)}</button>)}</nav>
       <div className="role-workspace-footer"><button onClick={() => navigate('/login')}><Icon name="users" size={16}/> Switch role</button><button onClick={() => { clearSession(); navigate('/login') }}><Icon name="logout" size={16}/> Sign out</button><div><span>{initials}</span><section><strong>{session.name}</strong><small>{session.email}</small></section></div></div>
     </aside>
     <div className="role-workspace-main">
