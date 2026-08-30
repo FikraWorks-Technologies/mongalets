@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
 import { Icon } from '../components/Icon'
 import { Logo } from '../components/Logo'
 import { clearSession } from '../lib/session'
@@ -12,13 +13,8 @@ const serviceCards = [
   { title: 'Cleaning services', text: 'Home cleaning, laundry, deep cleaning and pest control.', image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=900&q=85' },
   { title: 'Transport & cabs', text: 'Cabs, airport transfers, drivers and vehicle hire.', image: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=900&q=85' },
 ]
-
 const propertyImage = 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1400&q=85'
-
-const roleNames: Record<Role, string> = {
-  owner: 'Management', admin: 'Security admin', tenant: 'Resident', provider: 'Service provider', guest: 'Guest',
-}
-
+const roleNames: Record<Role, string> = { owner: 'Management', admin: 'Security admin', tenant: 'Resident', provider: 'Service provider', guest: 'Guest' }
 const roleNav: Record<Role, [string, string][]> = {
   owner: [['grid', 'Overview'], ['shield', 'Security'], ['users', 'People & presence'], ['key', 'Visitor access'], ['tool', 'Requests'], ['briefcase', 'Service providers'], ['calendar', 'Calendar']],
   admin: [['grid', 'Overview'], ['shield', 'Security'], ['users', 'People & presence'], ['key', 'Visitor access'], ['tool', 'Requests'], ['briefcase', 'Service providers'], ['calendar', 'Calendar']],
@@ -41,56 +37,44 @@ export function SecurityPortalPage({ role, section, session }: { role: Role; sec
   const privileged = role === 'owner' || role === 'admin'
   const logout = () => { clearSession(); navigate('/login') }
   const go = (label: string) => navigate(`/app/${role}/${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`)
+  const actions: Action[] = role === 'tenant' ? [
+    { icon: 'key', title: 'Invite visitor', text: 'Create and share an access invitation.', onClick: () => setInviteOpen(true) },
+    { icon: 'camera', title: 'Raise a report', text: 'Report an issue and attach photos.', onClick: () => setReportOpen(true) },
+    { icon: 'briefcase', title: 'Find a service', text: 'Browse trusted providers.', onClick: () => go('Services') },
+  ] : role === 'provider' ? [
+    { icon: 'tool', title: 'View jobs', text: 'See assigned requests and next steps.', onClick: () => go('My jobs') },
+    { icon: 'calendar', title: 'Your schedule', text: 'Check today and upcoming visits.', onClick: () => go('Schedule') },
+    { icon: 'key', title: 'Access visits', text: 'Review building access details.', onClick: () => go('Access visits') },
+  ] : role === 'guest' ? [
+    { icon: 'key', title: 'My visit', text: 'View your invitation and access status.', onClick: () => go('My visit') },
+    { icon: 'calendar', title: 'Visit details', text: 'Check when and where you are expected.', onClick: () => go('Visit details') },
+    { icon: 'briefcase', title: 'Services', text: 'See useful property services.', onClick: () => go('Services') },
+  ] : [
+    { icon: 'users', title: 'People & presence', text: 'See who is inside, expected or checked out.', onClick: () => go('People & presence') },
+    { icon: 'key', title: 'Visitor access', text: 'Review and approve access requests.', onClick: () => go('Visitor access') },
+    { icon: 'tool', title: 'Open requests', text: 'Handle reports and operational requests.', onClick: () => go('Requests') },
+  ]
 
-  const actions: Action[] = role === 'tenant'
-    ? [
-        { icon: 'key', title: 'Invite visitor', text: 'Create and share an access invitation.', onClick: () => setInviteOpen(true) },
-        { icon: 'camera', title: 'Raise a report', text: 'Report an issue and attach photos.', onClick: () => setReportOpen(true) },
-        { icon: 'briefcase', title: 'Find a service', text: 'Browse trusted providers.' , onClick: () => go('Services') },
-      ]
-    : role === 'provider'
-      ? [
-          { icon: 'tool', title: 'View jobs', text: 'See assigned requests and next steps.', onClick: () => go('My jobs') },
-          { icon: 'calendar', title: 'Your schedule', text: 'Check today and upcoming visits.', onClick: () => go('Schedule') },
-          { icon: 'key', title: 'Access visits', text: 'Review building access details.', onClick: () => go('Access visits') },
-        ]
-      : role === 'guest'
-        ? [
-            { icon: 'key', title: 'My visit', text: 'View your invitation and access status.', onClick: () => go('My visit') },
-            { icon: 'calendar', title: 'Visit details', text: 'Check when and where you are expected.', onClick: () => go('Visit details') },
-            { icon: 'briefcase', title: 'Services', text: 'See useful property services.', onClick: () => go('Services') },
-          ]
-        : [
-            { icon: 'users', title: 'People & presence', text: 'See who is inside, expected or checked out.', onClick: () => go('People & presence') },
-            { icon: 'key', title: 'Visitor access', text: 'Review and approve access requests.', onClick: () => go('Visitor access') },
-            { icon: 'tool', title: 'Open requests', text: 'Handle reports and operational requests.', onClick: () => go('Requests') },
-          ]
-
-  return (
-    <div className={`security-portal-shell role-${role}`}>
-      <aside className={`security-portal-sidebar ${sidebarOpen ? 'is-open' : ''}`}>
-        <div className="security-sidebar-top"><button className="logo-button" onClick={() => navigate('/')}><Logo inverse /></button><button className="icon-button security-mobile-close" onClick={() => setSidebarOpen(false)}><Icon name="close" /></button></div>
-        <div className="security-workspace"><span><Icon name={privileged ? 'shield' : role === 'provider' ? 'tool' : role === 'guest' ? 'key' : 'home'} size={18} /></span><div><small>Current workspace</small><strong>{roleName}</strong></div></div>
-        <nav className="security-nav"><small>Workspace</small>{nav.map(([icon, label], index) => <button key={label} className={activeLabel === label ? 'is-active' : ''} onClick={() => { index === 0 ? navigate(`/app/${role}`) : go(label); setSidebarOpen(false) }}><Icon name={icon as any} size={18} /><span>{label}</span>{(label === 'Requests' || label === 'My reports' || label === 'Visitor access') && <b>2</b>}</button>)}</nav>
-        <div className="security-sidebar-footer"><button onClick={() => navigate('/login')}><Icon name="users" size={17} /> Switch role</button><button onClick={logout}><Icon name="logout" size={17} /> Sign out</button><div className="security-user"><span>{initials}</span><section><strong>{session.name}</strong><small>{session.email}</small></section><Icon name="settings" size={15} /></div></div>
-      </aside>
-
-      <div className="security-portal-main">
-        <header className="security-topbar"><div className="security-topbar-left"><button className="icon-button security-menu" onClick={() => setSidebarOpen(true)}><Icon name="menu" /></button><div className="security-breadcrumb"><span>MongaLets</span><Icon name="arrow-right" size={13} /><strong>{activeLabel}</strong></div></div><div className="security-top-actions"><button className="security-search"><Icon name="search" size={16} /><span>{privileged ? 'Search people, visitors, requests...' : 'Search services & requests...'}</span></button><button className="icon-button icon-button--bordered" onClick={() => setNotificationsOpen(true)}><Icon name="bell" size={18} /><i /></button>{role === 'tenant' && <button className="button button--primary button--small" onClick={() => setInviteOpen(true)}><Icon name="plus" size={16} /> Invite</button>}<button className="portal-avatar">{initials}</button></div></header>
-
-        <main className="security-portal-content">
-          {isHome ? <RoleDashboard role={role} roleName={roleName} session={session} actions={actions} onInvite={() => setInviteOpen(true)} onReport={() => setReportOpen(true)} onNavigate={go} /> : <section className="security-panel security-coming-soon"><span className="modal-icon"><Icon name={role === 'provider' ? 'tool' : role === 'guest' ? 'key' : privileged ? 'shield' : 'clock'} size={23} /></span><small>{roleName}</small><h1>{activeLabel}</h1><p>This focused workspace is being prepared around the role's essential tasks. MongaLets keeps access, reports, service visits and communication simple.</p><button className="button button--primary" onClick={() => navigate(`/app/${role}`)}>Back to {nav[0][1]}</button></section>}
-        </main>
-      </div>
-
-      {inviteOpen && <Modal title="Invite a visitor" icon="key" onClose={() => setInviteOpen(false)}><p>Choose who is coming and when. The invitation can be shared with the visitor or sent for approval.</p><label>Visitor name<input placeholder="e.g. Grace Wanjiku" /></label><label>Expected date<input type="date" /></label><label>Purpose<select><option>Personal visit</option><option>Service visit</option><option>Delivery</option></select></label><div className="security-modal-actions"><button className="button button--secondary" onClick={() => setInviteOpen(false)}>Cancel</button><button className="button button--primary" onClick={() => setInviteOpen(false)}>Create invitation <Icon name="check" size={15} /></button></div></Modal>}
-      {reportOpen && <Modal title="Raise a report" icon="camera" onClose={() => setReportOpen(false)}><p>Give the responsible team enough detail to act quickly. Add photos when useful.</p><label>Category<select><option>Maintenance</option><option>Security incident</option><option>Noise / neighbour</option><option>Other</option></select></label><label>Description<textarea rows={4} placeholder="What happened?" /></label><label>Photos<input type="file" accept="image/*" multiple /></label><div className="security-modal-actions"><button className="button button--secondary" onClick={() => setReportOpen(false)}>Cancel</button><button className="button button--primary" onClick={() => setReportOpen(false)}>Submit report <Icon name="check" size={15} /></button></div></Modal>}
-      {notificationsOpen && <Modal title="Updates" icon="bell" onClose={() => setNotificationsOpen(false)}><div className="notification-item"><span><Icon name="check" size={15} /></span><div><strong>{role === 'guest' ? 'Visit confirmed' : role === 'provider' ? 'Job updated' : 'Visitor approved'}</strong><small>{role === 'guest' ? 'Your access invitation is active.' : role === 'provider' ? 'A service visit has been scheduled.' : 'Grace W. is expected today at 2:30 PM.'}</small></div></div><button className="button button--secondary button--full" onClick={() => setNotificationsOpen(false)}>Done</button></Modal>}
+  return <div className={`security-portal-shell role-${role}`}>
+    <aside className={`security-portal-sidebar ${sidebarOpen ? 'is-open' : ''}`}>
+      <div className="security-sidebar-top"><button className="logo-button" onClick={() => navigate('/')}><Logo inverse /></button><button className="icon-button security-mobile-close" onClick={() => setSidebarOpen(false)}><Icon name="close" /></button></div>
+      <div className="security-workspace"><span><Icon name={privileged ? 'shield' : role === 'provider' ? 'tool' : role === 'guest' ? 'key' : 'home'} size={18} /></span><div><small>Current workspace</small><strong>{roleName}</strong></div></div>
+      <nav className="security-nav"><small>Workspace</small>{nav.map(([icon, label], index) => <button key={label} className={activeLabel === label ? 'is-active' : ''} onClick={() => { index === 0 ? navigate(`/app/${role}`) : go(label); setSidebarOpen(false) }}><Icon name={icon as any} size={18} /><span>{label}</span>{(label === 'Requests' || label === 'My reports' || label === 'Visitor access') && <b>2</b>}</button>)}</nav>
+      <div className="security-sidebar-footer"><button onClick={() => navigate('/login')}><Icon name="users" size={17} /> Switch role</button><button onClick={logout}><Icon name="logout" size={17} /> Sign out</button><div className="security-user"><span>{initials}</span><section><strong>{session.name}</strong><small>{session.email}</small></section><Icon name="settings" size={15} /></div></div>
+    </aside>
+    <div className="security-portal-main">
+      <header className="security-topbar"><div className="security-topbar-left"><button className="icon-button security-menu" onClick={() => setSidebarOpen(true)}><Icon name="menu" /></button><div className="security-breadcrumb"><span>MongaLets</span><Icon name="arrow-right" size={13} /><strong>{activeLabel}</strong></div></div><div className="security-top-actions"><button className="security-search"><Icon name="search" size={16} /><span>{privileged ? 'Search people, visitors, requests...' : 'Search services & requests...'}</span></button><button className="icon-button icon-button--bordered" onClick={() => setNotificationsOpen(true)}><Icon name="bell" size={18} /><i /></button>{role === 'tenant' && <button className="button button--primary button--small" onClick={() => setInviteOpen(true)}><Icon name="plus" size={16} /> Invite</button>}<button className="portal-avatar">{initials}</button></div></header>
+      <main className="security-portal-content">
+        {isHome ? <RoleDashboard role={role} roleName={roleName} session={session} actions={actions} onInvite={() => setInviteOpen(true)} onReport={() => setReportOpen(true)} onNavigate={go} /> : <section className="security-panel security-coming-soon"><span className="modal-icon"><Icon name={role === 'provider' ? 'tool' : role === 'guest' ? 'key' : privileged ? 'shield' : 'clock'} size={23} /></span><small>{roleName}</small><h1>{activeLabel}</h1><p>This focused workspace is being prepared around the role's essential tasks. MongaLets keeps access, reports, service visits and communication simple.</p><button className="button button--primary" onClick={() => navigate(`/app/${role}`)}>Back to {nav[0][1]}</button></section>}
+      </main>
     </div>
-  )
+    {inviteOpen && <Modal title="Invite a visitor" icon="key" onClose={() => setInviteOpen(false)}><p>Choose who is coming and when. The invitation can be shared with the visitor or sent for approval.</p><label>Visitor name<input placeholder="e.g. Grace Wanjiku" /></label><label>Expected date<input type="date" /></label><label>Purpose<select><option>Personal visit</option><option>Service visit</option><option>Delivery</option></select></label><div className="security-modal-actions"><button className="button button--secondary" onClick={() => setInviteOpen(false)}>Cancel</button><button className="button button--primary" onClick={() => setInviteOpen(false)}>Create invitation <Icon name="check" size={15} /></button></div></Modal>}
+    {reportOpen && <Modal title="Raise a report" icon="camera" onClose={() => setReportOpen(false)}><p>Give the responsible team enough detail to act quickly. Add photos when useful.</p><label>Category<select><option>Maintenance</option><option>Security incident</option><option>Noise / neighbour</option><option>Other</option></select></label><label>Description<textarea rows={4} placeholder="What happened?" /></label><label>Photos<input type="file" accept="image/*" multiple /></label><div className="security-modal-actions"><button className="button button--secondary" onClick={() => setReportOpen(false)}>Cancel</button><button className="button button--primary" onClick={() => setReportOpen(false)}>Submit report <Icon name="check" size={15} /></button></div></Modal>}
+    {notificationsOpen && <Modal title="Updates" icon="bell" onClose={() => setNotificationsOpen(false)}><div className="notification-item"><span><Icon name="check" size={15} /></span><div><strong>{role === 'guest' ? 'Visit confirmed' : role === 'provider' ? 'Job updated' : 'Visitor approved'}</strong><small>{role === 'guest' ? 'Your access invitation is active.' : role === 'provider' ? 'A service visit has been scheduled.' : 'Grace W. is expected today at 2:30 PM.'}</small></div></div><button className="button button--secondary button--full" onClick={() => setNotificationsOpen(false)}>Done</button></Modal>}
+  </div>
 }
 
-function Modal({ title, icon, onClose, children }: { title: string; icon: any; onClose: () => void; children: React.ReactNode }) {
+function Modal({ title, icon, onClose, children }: { title: string; icon: any; onClose: () => void; children: ReactNode }) {
   return <div className="security-modal-backdrop"><div className="security-modal"><button className="icon-button security-modal-close" onClick={onClose}><Icon name="close" /></button><span className="modal-icon"><Icon name={icon} size={22} /></span><h2>{title}</h2>{children}</div></div>
 }
 
@@ -101,13 +85,8 @@ function RoleDashboard({ role, roleName, session, actions, onInvite, onReport, o
   return <GuestDashboard session={session} actions={actions} onNavigate={onNavigate} />
 }
 
-function DashboardHeading({ eyebrow, title, text, action }: { eyebrow: string; title: string; text: string; action?: React.ReactNode }) {
-  return <section className="security-dashboard-heading"><div><span className="eyebrow">{eyebrow}</span><h1>{title}</h1><p>{text}</p></div>{action && <div className="security-heading-actions">{action}</div>}</section>
-}
-
-function QuickActions({ actions }: { actions: Action[] }) {
-  return <section className="role-action-grid">{actions.map((action) => <button className="role-action-card" key={action.title} onClick={action.onClick}><span><Icon name={action.icon} size={20} /></span><div><strong>{action.title}</strong><small>{action.text}</small></div><Icon name="arrow-right" size={15} /></button>)}</section>
-}
+function DashboardHeading({ eyebrow, title, text, action }: { eyebrow: string; title: string; text: string; action?: ReactNode }) { return <section className="security-dashboard-heading"><div><span className="eyebrow">{eyebrow}</span><h1>{title}</h1><p>{text}</p></div>{action && <div className="security-heading-actions">{action}</div>}</section> }
+function QuickActions({ actions }: { actions: Action[] }) { return <section className="role-action-grid">{actions.map((action) => <button className="role-action-card" key={action.title} onClick={action.onClick}><span><Icon name={action.icon} size={20} /></span><div><strong>{action.title}</strong><small>{action.text}</small></div><Icon name="arrow-right" size={15} /></button>)}</section> }
 
 function ManagementDashboard({ role, roleName, actions, onNavigate }: { role: Role; roleName: string; actions: Action[]; onNavigate: (label: string) => void }) {
   return <><DashboardHeading eyebrow={`${roleName} · Building security`} title="Security command centre" text="A focused view of building movement, access decisions and issues that need attention." action={<><button className="button button--secondary" onClick={() => onNavigate('Calendar')}><Icon name="calendar" size={16} /> Calendar</button><button className="button button--primary" onClick={() => onNavigate('Visitor access')}><Icon name="key" size={16} /> Visitor access</button></>} /><section className="security-metric-grid role-metrics"><article><span><Icon name="users" size={19} /></span><small>Inside now</small><strong>42</strong><p>Residents, guests & staff</p></article><article><span><Icon name="clock" size={19} /></span><small>Expected today</small><strong>6</strong><p>Visitors & service visits</p></article><article><span><Icon name="check" size={19} /></span><small>Checked out today</small><strong>18</strong><p>Movement history</p></article><article><span><Icon name="tool" size={19} /></span><small>Open requests</small><strong>4</strong><p>2 need attention</p></article></section><section className="management-visual"><div><span className="eyebrow">Live building visibility</span><h2>Know who is here, who is expected and who has left.</h2><p>Only management and security see this information. Every movement is recorded for accountability.</p><div className="management-pills"><span><b>32</b> residents</span><span><b>7</b> guests</span><span><b>3</b> service visits</span></div></div><img src={propertyImage} alt="Modern residential property" /></section><section className="security-dashboard-grid role-management-grid"><article className="security-panel"><div className="security-panel-head"><div><small>Access control</small><h2>Needs attention</h2></div><span className="live-chip"><i /> Live</span></div><div className="attention-list"><div><span><Icon name="key" size={15} /></span><div><strong>2 visitor approvals</strong><small>Waiting for security review</small></div><b>Review</b></div><div><span><Icon name="tool" size={15} /></span><div><strong>2 open reports</strong><small>Maintenance & security</small></div><b>Open</b></div><div><span><Icon name="clock" size={15} /></span><div><strong>3 arrivals soon</strong><small>Within the next 2 hours</small></div><b>View</b></div></div></article><article className="security-panel"><div className="security-panel-head"><div><small>Recent movement</small><h2>Latest activity</h2></div><button className="security-text-link" onClick={() => onNavigate('People & presence')}>Full log <Icon name="arrow-right" size={14} /></button></div><div className="movement-list"><div><span className="presence-avatar presence-avatar--resident"><Icon name="home" size={16} /></span><div><strong>Amina Njoki</strong><small>Entered · Unit A-204</small></div><b>10:42</b></div><div><span className="presence-avatar presence-avatar--guest"><Icon name="users" size={16} /></span><div><strong>Grace W.</strong><small>Expected · Unit C-301</small></div><b>2:30 PM</b></div><div><span className="presence-avatar presence-avatar--provider"><Icon name="tool" size={16} /></span><div><strong>DenzeK Services</strong><small>Service visit · A-204</small></div><b>4:00 PM</b></div></div></article></section><QuickActions actions={actions} /></>
