@@ -5,6 +5,7 @@ import './styles.css'
 import './security-home.css'
 import './security-portal.css'
 import './role-dashboards.css'
+import './role-workspace.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
