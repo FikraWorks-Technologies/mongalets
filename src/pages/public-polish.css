@@ -1,0 +1,19 @@
+/* Public experience: existing brand styles, cleaner actions and responsive finishing. */
+html{scroll-behavior:smooth;scroll-padding-top:85px}
+.public-prototype-note{margin:12px 0 0!important;font-size:11px!important;line-height:1.55!important;color:#708982!important;max-width:520px!important}
+.public-role-links{display:flex;flex-wrap:wrap;gap:9px;margin-top:24px}
+.public-role-links button{display:inline-flex;align-items:center;gap:8px;padding:11px 14px;border:1px solid #c8ddd7;border-radius:99px;color:#0a665b;background:#fff;font:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:transform .15s ease,border-color .15s ease}
+.public-role-links button:hover{border-color:#0a665b;transform:translateY(-2px)}
+.public-footer{background:#0c2525;color:#f6f9f7;padding:27px 0}
+.public-footer .container{display:flex;align-items:center;justify-content:space-between;gap:25px}
+.public-footer strong,.public-footer small{display:block}
+.public-footer strong{font-size:17px;letter-spacing:-.02em}
+.public-footer small{margin-top:5px;font-size:11px;color:#a4c0b7;line-height:1.5}
+.public-footer .container>div:last-child{display:flex;flex-wrap:wrap;gap:14px}
+.public-footer button{font:inherit;font-size:12px;color:#d5ece5;background:transparent;border:0;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+.public-site button{cursor:pointer}
+.security-hero__actions .button,.security-feature button,.provider-grid button,.public-role-links button{transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
+.security-hero__actions .button:hover{transform:translateY(-2px)}
+@media(max-width:700px){.security-hero__grid{grid-template-columns:minmax(0,1fr)}.homepage-photo-band .container{grid-template-columns:1fr}.photo-band-images{gap:9px}.photo-band-images img{height:180px}.public-footer .container{flex-direction:column;align-items:flex-start}.public-role-links button{flex:1;justify-content:center}}
+@media(max-width:380px){.security-hero__copy h1{font-size:clamp(33px,10vw,43px)}.public-role-links{display:grid;grid-template-columns:1fr 1fr}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.security-hero__actions .button,.public-role-links button{transition:none}}
