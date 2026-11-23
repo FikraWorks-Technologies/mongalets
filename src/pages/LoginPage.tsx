@@ -23,20 +23,25 @@ export function LoginPage({ initialRole, session }: { initialRole?: Role; sessio
   const [loading, setLoading] = useState(false)
   const [otpOpen, setOtpOpen] = useState(false)
   const [forgotOpen, setForgotOpen] = useState(false)
-  const [forgotSent, setForgotSent] = useState(false)
+  
+  const [authError, setAuthError] = useState('')
 
-  useEffect(() => {
-    setEmail(selected.email)
-  }, [selected.email])
+  useEffect(() => { setRole(initialRole ?? 'owner') }, [initialRole])
+  useEffect(() => { setEmail(selected.email); setAuthError('') }, [selected.email])
 
   const signIn = (event: React.FormEvent) => {
     event.preventDefault()
+    if (email.trim().toLowerCase() !== selected.email || password !== 'MongaLets@2026') {
+      setAuthError('Use the sample email for this role and the demo password MongaLets@2026.')
+      return
+    }
+    setAuthError('')
     setLoading(true)
     window.setTimeout(() => {
-      createDemoSession(role, email)
+      createDemoSession(role, selected.email)
       setLoading(false)
       navigate(`/app/${role}`)
-    }, 650)
+    }, 300)
   }
 
   const useExisting = () => {
@@ -54,20 +59,20 @@ export function LoginPage({ initialRole, session }: { initialRole?: Role; sessio
           <div className="auth-story-card">
             <div className="auth-story-card__image"><img src="/assets/property-city.svg" alt="MongaLets managed property" /></div>
             <div className="auth-story-card__content">
-              <div className="auth-story-card__status"><span><Icon name="sync" size={15} /></span> Live property timeline</div>
+              <div className="auth-story-card__status"><span><Icon name="sync" size={15} /></span> Sample property timeline</div>
               <strong>Marina Bay Apartments</strong>
               <small>Rent, bookings, requests and provider activity in one view.</small>
               <div className="auth-story-card__metrics"><span><b>91%</b> occupancy</span><span><b>94%</b> collected</span><span><b>4</b> active jobs</span></div>
             </div>
           </div>
         </div>
-        <div className="auth-aside__footer"><span>Secure role-based access</span><span><Icon name="shield" size={14} /> Protected sessions</span></div>
+        <div className="auth-aside__footer"><span>Preview role-based workspaces</span><span><Icon name="shield" size={14} /> Demo session only</span></div>
       </aside>
 
       <main className="auth-main">
         <div className="auth-main__top">
           <button className="text-button" onClick={() => navigate('/')}><Icon name="arrow-right" className="rotate-180" size={16} /> Back to website</button>
-          <span>Need help? <button className="text-button text-button--accent" onClick={() => { setForgotSent(false); setForgotOpen(true) }}>Contact support</button></span>
+          <span>Need help? <button className="text-button text-button--accent" onClick={() => { setForgotOpen(true) }}>Contact support</button></span>
         </div>
 
         <div className="auth-card">
@@ -82,7 +87,7 @@ export function LoginPage({ initialRole, session }: { initialRole?: Role; sessio
           <div className="auth-card__heading">
             <span className="eyebrow">Role-aware access</span>
             <h2>Sign in to your workspace</h2>
-            <p>Select how you are entering MongaLets. Your navigation, actions and data permissions will adapt automatically.</p>
+            <p>Select how you are entering MongaLets. The interface adapts to the selected sample role. Real authorization is not connected.</p>
           </div>
 
           <div className="role-selector" role="tablist" aria-label="Choose a role">
@@ -103,45 +108,39 @@ export function LoginPage({ initialRole, session }: { initialRole?: Role; sessio
           </div>
 
           <form className="auth-form" onSubmit={signIn}>
+            {authError && <p className="form-error" role="alert">{authError}</p>}
             <label>
               <span>Email address</span>
               <div className="input-shell"><Icon name="mail" size={18} /><input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" /></div>
             </label>
             <label>
-              <span className="label-row">Password <button type="button" onClick={() => { setForgotSent(false); setForgotOpen(true) }}>Forgot password?</button></span>
+              <span className="label-row">Password <button type="button" onClick={() => { setForgotOpen(true) }}>Forgot password?</button></span>
               <div className="input-shell"><Icon name="lock" size={18} /><input type={showPassword ? 'text' : 'password'} required value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" /><button type="button" className="input-shell__action" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? 'Hide password' : 'Show password'}><Icon name={showPassword ? 'eye-off' : 'eye'} size={18} /></button></div>
             </label>
-            <div className="auth-form__options"><label className="checkbox"><input type="checkbox" defaultChecked /><span><Icon name="check" size={12} /></span> Keep me signed in</label><small>Protected with secure sessions</small></div>
+            <div className="auth-form__options"><label className="checkbox"><input type="checkbox" defaultChecked /><span><Icon name="check" size={12} /></span> Keep me signed in</label><small>Frontend demonstration</small></div>
             <button className="button button--primary button--full button--large" type="submit" disabled={loading}>
               {loading ? <><span className="spinner" /> Preparing your workspace...</> : <>Sign in as {selected.title} <Icon name="arrow-right" size={18} /></>}
             </button>
           </form>
 
           <div className="auth-divider"><span>or use passwordless access</span></div>
-          <button className="button button--secondary button--full" onClick={() => setOtpOpen(true)}><Icon name="phone" size={18} /> Send one-time password by SMS</button>
+          <button className="button button--secondary button--full" onClick={() => setOtpOpen(true)}><Icon name="phone" size={18} /> About SMS one-time passwords</button>
 
           <div className="demo-note">
             <span><Icon name="sparkles" size={17} /></span>
-            <div><strong>Interactive frontend demonstration</strong><small>Any email and password will open the selected role. Production authentication will connect through the application programming interface.</small></div>
+            <div><strong>Interactive frontend demonstration</strong><small>Use the sample email and password to preview a role; this does not authenticate against a live server. Production authentication will connect through the application programming interface.</small></div>
           </div>
         </div>
       </main>
 
-      <Modal open={otpOpen} onClose={() => setOtpOpen(false)} title="Sign in with a one-time password" eyebrow="FikraWorks BulkSMS" size="small">
-        <form className="otp-form" onSubmit={(event) => { event.preventDefault(); setOtpOpen(false); createDemoSession(role, email); navigate(`/app/${role}`) }}>
-          <p>Enter the mobile number linked to your {selected.title.toLowerCase()} account.</p>
-          <label>Mobile number<div className="input-shell"><Icon name="phone" size={18} /><input required defaultValue="+254 769 778 549" /></div></label>
-          <div className="otp-preview"><Icon name="message" size={18} /><div><strong>Secure six-digit code</strong><small>The production version will send and verify this through FikraWorks BulkSMS.</small></div></div>
-          <button className="button button--primary button--full" type="submit">Send code and continue <Icon name="arrow-right" size={17} /></button>
-        </form>
+      <Modal open={otpOpen} onClose={() => setOtpOpen(false)} title="SMS verification" eyebrow="Production integration" size="small">
+        <p>The final MongaLets authentication will require a real phone-number check and a server-verified SMS one-time password. This frontend demo does not send SMS or accept a simulated OTP as proof of identity.</p>
+        <button className="button button--primary button--full" onClick={() => setOtpOpen(false)}>Return to demo sign in</button>
       </Modal>
 
-      <Modal open={forgotOpen} onClose={() => setForgotOpen(false)} title={forgotSent ? 'Check your email' : 'Recover your account'} eyebrow="Secure access" size="small">
-        {forgotSent ? (
-          <div className="success-state"><span><Icon name="mail" size={28} /></span><h3>Recovery instructions sent.</h3><p>In production, a secure recovery link and SMS alert will be issued to the account holder.</p><button className="button button--primary button--full" onClick={() => setForgotOpen(false)}>Return to login</button></div>
-        ) : (
-          <form className="contact-form" onSubmit={(event) => { event.preventDefault(); setForgotSent(true) }}><label>Account email<input type="email" required defaultValue={email} /></label><button className="button button--primary button--full" type="submit">Send recovery instructions <Icon name="arrow-right" size={17} /></button></form>
-        )}
+      <Modal open={forgotOpen} onClose={() => setForgotOpen(false)} title="Account recovery" eyebrow="Coming with secure authentication" size="small">
+        <p>Password recovery is not available in this frontend-only demo. No email or SMS will be sent. Use the sample login shown on this page to explore the prototype.</p>
+        <button className="button button--primary button--full" onClick={() => setForgotOpen(false)}>Return to demo</button>
       </Modal>
     </div>
   )
