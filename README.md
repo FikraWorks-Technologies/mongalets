@@ -1,5 +1,8 @@
 # MongaLets Frontend
 
+**Live website:** [Open deployed site](https://mongalets-one.vercel.app)  
+**Description:** Property operations experience for owners, tenants, service providers, guests and administrators.
+
 A polished, responsive React and TypeScript frontend for the MongaLets property, facility, tenant, guest and service-provider ecosystem.
 
 ## Included in this release
